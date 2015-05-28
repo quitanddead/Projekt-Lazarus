@@ -140,6 +140,10 @@ if (count _stats > 0) then {
 	_playerObj setVariable["humanKills",(_stats select 2),true];
 	_playerObj setVariable["banditKills",(_stats select 3),true];
 	_playerObj addScore (_stats select 1);
+	_playerObj setVariable ["moneychanged",0,true];	
+	_playerObj setVariable ["bankchanged",0,true];	
+	_playerObj setVariable["AsReMixhud", true,true];
+
 	
 	//Save Score
 	_score = score _playerObj;
@@ -164,12 +168,16 @@ if (count _stats > 0) then {
 	_playerObj setVariable["humanKills",0,true];
 	_playerObj setVariable["banditKills",0,true];
 	_playerObj setVariable["headShots",0,true];
+	_playerObj setVariable ["moneychanged",0,true];	
+	_playerObj setVariable ["bankchanged",0,true];	
+	_playerObj setVariable ["friendlies",[],true];
+	_playerObj setVariable["AsReMixhud", true,true];
 	
 	//record for Server JIP checks
-	_playerObj setVariable["zombieKills_CHK",0];
+	_playerObj setVariable["zombieKills_CHK",0,true];
 	_playerObj setVariable["humanKills_CHK",0,true];
 	_playerObj setVariable["banditKills_CHK",0,true];
-	_playerObj setVariable["headShots_CHK",0];
+	_playerObj setVariable["headShots_CHK",0,true];
 };
 
 if (_randomSpot) then {
@@ -248,6 +256,26 @@ if (!isNull _playerObj) then {
 //record time started
 _playerObj setVariable ["lastTime",time];
 //_playerObj setVariable ["model_CHK",typeOf _playerObj];
+
+// ------------ ZUPA - Single Currency - Get Bank Value ----------------
+
+_playerIDzupa = getPlayerUID _playerObj;
+_bankingstart = 0;
+if(_playerIDzupa != "")then{
+_key = format["CHILD:999:SELECT `PlayerMorality` FROM `player_data` WHERE `PlayerUID` = '%1':[0]:",_playerIDzupa];
+_result = _key call server_hiveReadWrite;
+_status    = _result select 0;            // get the status of the result
+if (_status == "CustomStreamStart") then {    //check if the stream coming from the hive was opened
+_val = _result select 1;                  // get the number of entries that will be coming in the stream
+if(_val > 0) then {
+_result = _key call server_hiveReadWrite;
+_bankingstart = _result select 0;
+};
+};
+_playerObj setVariable["bank",_bankingstart,true];
+};
+
+// ------------ ZUPA - END  ----------------
 
 //diag_log ("LOGIN PUBLISHING: " + str(_playerObj) + " Type: " + (typeOf _playerObj));
 
